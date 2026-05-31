@@ -1,0 +1,126 @@
+package com.proyectofinal.jrmg.structures.cola;
+
+import com.proyectofinal.jrmg.model.Repartidor;
+import java.util.ArrayList;
+import java.util.List;
+
+public class ColaRepartidor {
+    private NodoColaRepartidor frente;
+    private NodoColaRepartidor fin;
+    private int tamanio;
+
+    public ColaRepartidor() {
+        this.frente = null;
+        this.fin = null;
+        this.tamanio = 0;
+    }
+
+    public synchronized void encolar(Repartidor repartidor) {
+        NodoColaRepartidor nuevo = new NodoColaRepartidor(repartidor);
+        if (estaVacia()) {
+            frente = nuevo;
+        } else {
+            fin.setSiguiente(nuevo);
+        }
+        fin = nuevo;
+        tamanio++;
+    }
+
+    public synchronized Repartidor desencolar() {
+        if (estaVacia()) {
+            return null;
+        }
+        Repartidor repartidor = frente.getDato();
+        frente = frente.getSiguiente();
+        if (frente == null) {
+            fin = null;
+        }
+        tamanio--;
+        return repartidor;
+    }
+
+    public synchronized Repartidor frente() {
+        if (estaVacia()) {
+            return null;
+        }
+        return frente.getDato();
+    }
+
+    public synchronized boolean estaVacia() {
+        return frente == null;
+    }
+
+    public synchronized int tamanio() {
+        return tamanio;
+    }
+
+    public synchronized List<Repartidor> obtenerTodos() {
+        List<Repartidor> repartidores = new ArrayList<>();
+        NodoColaRepartidor temp = frente;
+        while (temp != null) {
+            repartidores.add(temp.getDato());
+            temp = temp.getSiguiente();
+        }
+        return repartidores;
+    }
+
+    public synchronized Repartidor buscarPorCui(String cui) {
+        NodoColaRepartidor temp = frente;
+        while (temp != null) {
+            if (temp.getDato().getCui().equals(cui)) {
+                return temp.getDato();
+            }
+            temp = temp.getSiguiente();
+        }
+        return null;
+    }
+
+    public synchronized boolean modificar(Repartidor repartidorModificado) {
+        NodoColaRepartidor temp = frente;
+        while (temp != null) {
+            if (temp.getDato().getCui().equals(repartidorModificado.getCui())) {
+                temp.getDato().setNombre(repartidorModificado.getNombre());
+                temp.getDato().setApellidos(repartidorModificado.getApellidos());
+                temp.getDato().setLicencia(repartidorModificado.getLicencia());
+                temp.getDato().setTelefono(repartidorModificado.getTelefono());
+                return true;
+            }
+            temp = temp.getSiguiente();
+        }
+        return false;
+    }
+
+    public synchronized boolean eliminarPorCui(String cui) {
+        if (estaVacia()) return false;
+
+        // Si está en el frente
+        if (frente.getDato().getCui().equals(cui)) {
+            frente = frente.getSiguiente();
+            if (frente == null) {
+                fin = null;
+            }
+            tamanio--;
+            return true;
+        }
+
+        NodoColaRepartidor prev = frente;
+        NodoColaRepartidor curr = frente.getSiguiente();
+        while (curr != null) {
+            if (curr.getDato().getCui().equals(cui)) {
+                prev.setSiguiente(curr.getSiguiente());
+                if (curr == fin) {
+                    fin = prev;
+                }
+                tamanio--;
+                return true;
+            }
+            prev = curr;
+            curr = curr.getSiguiente();
+        }
+        return false;
+    }
+
+    public synchronized NodoColaRepartidor getFrente() {
+        return frente;
+    }
+}

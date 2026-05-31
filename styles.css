@@ -1,0 +1,17 @@
+package com.proyectofinal.jrmg.structures.cola;
+
+import com.proyectofinal.jrmg.model.Repartidor;
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
+public class NodoColaRepartidor {
+    private Repartidor dato;
+    private NodoColaRepartidor siguiente;
+
+    public NodoColaRepartidor(Repartidor dato) {
+        this.dato = dato;
+        this.siguiente = null;
+    }
+}

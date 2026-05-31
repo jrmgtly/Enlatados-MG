@@ -1,0 +1,127 @@
+package com.proyectofinal.jrmg.structures.cola;
+
+import com.proyectofinal.jrmg.model.Vehiculo;
+import java.util.ArrayList;
+import java.util.List;
+
+public class ColaVehiculo {
+    private NodoColaVehiculo frente;
+    private NodoColaVehiculo fin;
+    private int tamanio;
+
+    public ColaVehiculo() {
+        this.frente = null;
+        this.fin = null;
+        this.tamanio = 0;
+    }
+
+    public synchronized void encolar(Vehiculo vehiculo) {
+        NodoColaVehiculo nuevo = new NodoColaVehiculo(vehiculo);
+        if (estaVacia()) {
+            frente = nuevo;
+        } else {
+            fin.setSiguiente(nuevo);
+        }
+        fin = nuevo;
+        tamanio++;
+    }
+
+    public synchronized Vehiculo desencolar() {
+        if (estaVacia()) {
+            return null;
+        }
+        Vehiculo vehiculo = frente.getDato();
+        frente = frente.getSiguiente();
+        if (frente == null) {
+            fin = null;
+        }
+        tamanio--;
+        return vehiculo;
+    }
+
+    public synchronized Vehiculo frente() {
+        if (estaVacia()) {
+            return null;
+        }
+        return frente.getDato();
+    }
+
+    public synchronized boolean estaVacia() {
+        return frente == null;
+    }
+
+    public synchronized int tamanio() {
+        return tamanio;
+    }
+
+    public synchronized List<Vehiculo> obtenerTodos() {
+        List<Vehiculo> vehiculos = new ArrayList<>();
+        NodoColaVehiculo temp = frente;
+        while (temp != null) {
+            vehiculos.add(temp.getDato());
+            temp = temp.getSiguiente();
+        }
+        return vehiculos;
+    }
+
+    public synchronized Vehiculo buscarPorPlaca(String placa) {
+        NodoColaVehiculo temp = frente;
+        while (temp != null) {
+            if (temp.getDato().getPlaca().equalsIgnoreCase(placa)) {
+                return temp.getDato();
+            }
+            temp = temp.getSiguiente();
+        }
+        return null;
+    }
+
+    public synchronized boolean modificar(Vehiculo vehiculoModificado) {
+        NodoColaVehiculo temp = frente;
+        while (temp != null) {
+            if (temp.getDato().getPlaca().equalsIgnoreCase(vehiculoModificado.getPlaca())) {
+                temp.getDato().setMarca(vehiculoModificado.getMarca());
+                temp.getDato().setModelo(vehiculoModificado.getModelo());
+                temp.getDato().setColor(vehiculoModificado.getColor());
+                temp.getDato().setAnio(vehiculoModificado.getAnio());
+                temp.getDato().setTipoTransmision(vehiculoModificado.getTipoTransmision());
+                return true;
+            }
+            temp = temp.getSiguiente();
+        }
+        return false;
+    }
+
+    public synchronized boolean eliminarPorPlaca(String placa) {
+        if (estaVacia()) return false;
+
+        // Si está en el frente
+        if (frente.getDato().getPlaca().equalsIgnoreCase(placa)) {
+            frente = frente.getSiguiente();
+            if (frente == null) {
+                fin = null;
+            }
+            tamanio--;
+            return true;
+        }
+
+        NodoColaVehiculo prev = frente;
+        NodoColaVehiculo curr = frente.getSiguiente();
+        while (curr != null) {
+            if (curr.getDato().getPlaca().equalsIgnoreCase(placa)) {
+                prev.setSiguiente(curr.getSiguiente());
+                if (curr == fin) {
+                    fin = prev;
+                }
+                tamanio--;
+                return true;
+            }
+            prev = curr;
+            curr = curr.getSiguiente();
+        }
+        return false;
+    }
+
+    public synchronized NodoColaVehiculo getFrente() {
+        return frente;
+    }
+}

@@ -1,0 +1,206 @@
+package com.proyectofinal.jrmg.util;
+
+import com.proyectofinal.jrmg.model.*;
+import java.io.BufferedReader;
+import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.List;
+
+public class CsvParser {
+
+    public static List<Usuario> parseUsuarios(String contenido, List<String> errores) {
+        List<Usuario> lista = new ArrayList<>();
+        try (BufferedReader br = new BufferedReader(new StringReader(contenido))) {
+            String linea;
+            int numLinea = 0;
+            while ((linea = br.readLine()) != null) {
+                numLinea++;
+                linea = linea.trim();
+                if (linea.isEmpty()) continue;
+                
+                // Ignorar encabezado si existe
+                if (numLinea == 1 && (linea.toLowerCase().contains("id") || linea.toLowerCase().contains("nombre"))) {
+                    continue;
+                }
+                
+                String[] columnas = linea.split(";");
+                if (columnas.length < 4) {
+                    errores.add("Línea " + numLinea + ": Columnas insuficientes (se requieren 4). Contenido: " + linea);
+                    continue;
+                }
+                
+                try {
+                    int id = Integer.parseInt(columnas[0].trim());
+                    String nombre = columnas[1].trim();
+                    String apellido = columnas[2].trim();
+                    String contrasena = columnas[3].trim();
+                    
+                    lista.add(Usuario.builder()
+                            .id(id)
+                            .nombre(nombre)
+                            .apellidos(apellido)
+                            .contrasena(contrasena)
+                            .build());
+                } catch (NumberFormatException e) {
+                    errores.add("Línea " + numLinea + ": ID inválido. Debe ser un número entero.");
+                }
+            }
+        } catch (Exception e) {
+            errores.add("Error general al procesar el archivo de usuarios: " + e.getMessage());
+        }
+        return lista;
+    }
+
+    public static List<Cliente> parseClientes(String contenido, List<String> errores) {
+        List<Cliente> lista = new ArrayList<>();
+        try (BufferedReader br = new BufferedReader(new StringReader(contenido))) {
+            String linea;
+            int numLinea = 0;
+            while ((linea = br.readLine()) != null) {
+                numLinea++;
+                linea = linea.trim();
+                if (linea.isEmpty()) continue;
+                
+                if (numLinea == 1 && (linea.toLowerCase().contains("dpi") || linea.toLowerCase().contains("cui") || linea.toLowerCase().contains("nombre"))) {
+                    continue;
+                }
+                
+                String[] columnas = linea.split(";");
+                if (columnas.length < 4) {
+                    errores.add("Línea " + numLinea + ": Columnas insuficientes (se requieren 4: DPI;Nombre;Apellido;Teléfono). Contenido: " + linea);
+                    continue;
+                }
+                
+                String dpi = columnas[0].trim();
+                String nombre = columnas[1].trim();
+                String apellido = columnas[2].trim();
+                String telefono = columnas[3].trim();
+                String direccion = ""; // Dirección opcional
+                if (columnas.length >= 5) {
+                    direccion = columnas[4].trim();
+                }
+                
+                if (dpi.isEmpty()) {
+                    errores.add("Línea " + numLinea + ": El DPI/CUI no puede estar vacío.");
+                    continue;
+                }
+                
+                lista.add(Cliente.builder()
+                        .cui(dpi)
+                        .nombre(nombre)
+                        .apellidos(apellido)
+                        .telefono(telefono)
+                        .direccion(direccion)
+                        .build());
+            }
+        } catch (Exception e) {
+            errores.add("Error general al procesar el archivo de clientes: " + e.getMessage());
+        }
+        return lista;
+    }
+
+    public static List<Repartidor> parseRepartidores(String contenido, List<String> errores) {
+        List<Repartidor> lista = new ArrayList<>();
+        try (BufferedReader br = new BufferedReader(new StringReader(contenido))) {
+            String linea;
+            int numLinea = 0;
+            while ((linea = br.readLine()) != null) {
+                numLinea++;
+                linea = linea.trim();
+                if (linea.isEmpty()) continue;
+                
+                if (numLinea == 1 && (linea.toLowerCase().contains("dpi") || linea.toLowerCase().contains("licencia"))) {
+                    continue;
+                }
+                
+                String[] columnas = linea.split(";");
+                if (columnas.length < 5) {
+                    errores.add("Línea " + numLinea + ": Columnas insuficientes (se requieren 5: DPI;Nombre;Apellido;Licencia;Teléfono). Contenido: " + linea);
+                    continue;
+                }
+                
+                String dpi = columnas[0].trim();
+                String nombre = columnas[1].trim();
+                String apellido = columnas[2].trim();
+                String licenciaStr = columnas[3].trim().toUpperCase();
+                String telefono = columnas[4].trim();
+                
+                if (dpi.isEmpty()) {
+                    errores.add("Línea " + numLinea + ": El DPI/CUI no puede estar vacío.");
+                    continue;
+                }
+                
+                TipoLicencia licencia;
+                try {
+                    licencia = TipoLicencia.valueOf(licenciaStr);
+                } catch (IllegalArgumentException e) {
+                    errores.add("Línea " + numLinea + ": Tipo de licencia inválido (" + licenciaStr + "). Debe ser A, B o C.");
+                    continue;
+                }
+                
+                lista.add(Repartidor.builder()
+                        .cui(dpi)
+                        .nombre(nombre)
+                        .apellidos(apellido)
+                        .licencia(licencia)
+                        .telefono(telefono)
+                        .build());
+            }
+        } catch (Exception e) {
+            errores.add("Error general al procesar el archivo de repartidores: " + e.getMessage());
+        }
+        return lista;
+    }
+
+    public static List<Vehiculo> parseVehiculos(String contenido, List<String> errores) {
+        List<Vehiculo> lista = new ArrayList<>();
+        try (BufferedReader br = new BufferedReader(new StringReader(contenido))) {
+            String linea;
+            int numLinea = 0;
+            while ((linea = br.readLine()) != null) {
+                numLinea++;
+                linea = linea.trim();
+                if (linea.isEmpty()) continue;
+                
+                if (numLinea == 1 && (linea.toLowerCase().contains("placa") || linea.toLowerCase().contains("marca"))) {
+                    continue;
+                }
+                
+                String[] columnas = linea.split(";");
+                if (columnas.length < 6) {
+                    errores.add("Línea " + numLinea + ": Columnas insuficientes (se requieren 6: Placa;Marca;Modelo;Color;Año;Transmisión). Contenido: " + linea);
+                    continue;
+                }
+                
+                String placa = columnas[0].trim();
+                String marca = columnas[1].trim();
+                String modelo = columnas[2].trim();
+                String color = columnas[3].trim();
+                String anioStr = columnas[4].trim();
+                String transmision = columnas[5].trim();
+                
+                if (placa.isEmpty()) {
+                    errores.add("Línea " + numLinea + ": La placa no puede estar vacía.");
+                    continue;
+                }
+                
+                try {
+                    int anio = Integer.parseInt(anioStr);
+                    lista.add(Vehiculo.builder()
+                            .placa(placa)
+                            .marca(marca)
+                            .modelo(modelo)
+                            .color(color)
+                            .anio(anio)
+                            .tipoTransmision(transmision)
+                            .build());
+                } catch (NumberFormatException e) {
+                    errores.add("Línea " + numLinea + ": Año inválido (" + anioStr + "). Debe ser un número entero.");
+                }
+            }
+        } catch (Exception e) {
+            errores.add("Error general al procesar el archivo de vehículos: " + e.getMessage());
+        }
+        return lista;
+    }
+}
